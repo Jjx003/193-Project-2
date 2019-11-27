@@ -1,25 +1,57 @@
-let changeColor = document.getElementById('changeColor');
+function listen() {
+console.log("Wtf");
 
-changeColor.onclick = function(element) {
-    let color = element.target.value;
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      chrome.tabs.executeScript(
-          tabs[0].id,
-          {code: 'document.body.style.backgroundColor = "' + color + '";'});
+    let header = document.getElementById("Display");
+
+
+    console.log("inejcted");
+
+    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+        console.log("wack");
+        if (request.indexOf("update_url")) {
+            console.log("recieved");
+            header.innerHTML = request["update_url"];
+            sendResponse({received:"1"});
+        } else {
+            console.log("asdsadasdsdsd");
+        }
     });
-  }
 
-chrome.storage.sync.get('color', function(data) {
-  changeColor.style.backgroundColor = data.color;
-  changeColor.setAttribute('value', data.color);
+chrome.runtime.onConnect.addListener(function(port) {
+    console.log("reee");
+  console.assert(port.name == "knockknock");
+  port.onMessage.addListener(function(msg) {
+      console.log("OMG A DOUBLE RAINBOW");
+      if (msg.indexOf("answer")) {
+          header.innerText = msg.answer;
+      }
+  });
 });
 
-chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    console.log(sender.tab ?
-                "from a content script:" + sender.tab.url :
-                "from the extension");
-    if (request.indexOf("current_url") != -1) {
-      sendResponse({wack:""})
-    }
-  });
+
+chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        //var timer = new chrome.Interval();
+        //timer.start();
+
+        var port = chrome.tabs.connect(tabs[0].id);
+        port.onMessage.addListener(function(msg) {
+                console.log('recieve');
+                header.innerText = msg.answer;
+                });
+
+        port.postMessage({a:"1"});
+
+        }); 
+
+
+};
+
+
+
+document.addEventListener("DOMContentLoaded", function(event) {
+    listen();
+    console.log("hhoho");
+})
+//});
+
+
